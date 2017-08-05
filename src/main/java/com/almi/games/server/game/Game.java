@@ -1,6 +1,5 @@
 package com.almi.games.server.game;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -14,6 +13,7 @@ import java.util.List;
 @Entity
 @Builder
 @Getter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -40,7 +40,13 @@ public class Game {
     @Setter
     private LocalDateTime finishedTimestamp;
 
-    @OneToMany(mappedBy = "game")
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
     private List<GameMove> gameMoves;
 
+    @Column(name = "game_status")
+    @Setter
+    private GameStatus gameState;
+
+    @Column(name = "game_link_hash")
+    private String gameLink;
 }

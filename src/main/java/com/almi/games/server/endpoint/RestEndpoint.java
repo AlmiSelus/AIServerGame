@@ -47,7 +47,7 @@ public class RestEndpoint {
     @PostMapping("/api/game/connect")
     public DeferredResult<Game> startGame(@RequestBody AIGameRequest gameRequest) {
         DeferredResult<Game> gameResult = new DeferredResult<>();
-        Single<Game> startedGameSingle = gameService.startGame(gameRequest);
+        Single<Game> startedGameSingle = gameService.createGame(gameRequest);
         startedGameSingle.subscribe(gameResult::setResult, gameResult::setErrorResult);
         return gameResult;
     }

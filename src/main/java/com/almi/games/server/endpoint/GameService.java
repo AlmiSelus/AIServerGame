@@ -6,27 +6,25 @@ import com.almi.games.server.game.GameMove;
 import com.almi.games.server.game.GamePlayer;
 import com.almi.games.server.game.GameStatus;
 import com.almi.games.server.request.AIGameRequest;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.exceptions.Exceptions;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static io.vavr.API.$;
-import static io.vavr.API.Case;
-import static io.vavr.API.Match;
-import static io.vavr.Predicates.is;
+import static io.vavr.API.*;
 
 /**
  * Created by c309044 on 2017-08-03.
  */
 @Service
 @Transactional
+@Slf4j
 public class GameService {
 
     @Autowired
@@ -35,12 +33,23 @@ public class GameService {
     @Autowired
     private PlayerRepository playerRepository;
 
-    public Single<Game> startGame(AIGameRequest gameRequest) {
+    public Single<Game> createGame(AIGameRequest gameRequest) {
         GamePlayer gamePlayer = findGamePlayerOrCreateNew(gameRequest);
 
         return Single.just(gameRequest)
-                .map(request-> Game.builder().createdTimestamp(gameRequest.getTimestamp()).player1(gamePlayer).build())
+                .map(request-> Game.builder()
+                        .gameState(GameStatus.STARTED)
+                        .gameLink(createGameHash(gameRequest))
+                        .createdTimestamp(gameRequest.getTimestamp())
+                        .player1(gamePlayer)
+                        .build())
                 .doOnEvent((gameEvent, error) -> gameRepository.save(gameEvent));
+    }
+
+    private String createGameHash(AIGameRequest gameRequest) {
+        String hashTimeStamp = new String(Base64.encode(gameRequest.getTimestamp().toString().getBytes()));
+        hashTimeStamp += gameRequest.getUserID();
+        return new String(Base64.encode(hashTimeStamp.getBytes()));
     }
 
     public Single<Game> connectToExistingGame(AIGameRequest gameRequest) {
@@ -51,6 +60,7 @@ public class GameService {
                     if(Optional.ofNullable(game.getPlayer2()).isPresent()) {
                         throw Exceptions.propagate(new ThirdPlayerConnectsToBoardException());
                     }
+                    game.setGameState(GameStatus.IN_PROGRESS);
                     game.setPlayer2(gamePlayer);
                     return game;
                 })
@@ -78,6 +88,7 @@ public class GameService {
                                     .col(gameRequest.getCol())
                                     .row(gameRequest.getRow())
                                     .build());
+                    log.info("Game = " + game.toString());
                     return game;
                 })
                 .doOnEvent((game, error)-> gameRepository.save(game));
@@ -89,6 +100,7 @@ public class GameService {
                 .map(game-> {
                     if(gameRequest.getGameStatus() == GameStatus.FINISHED) {
                         game.setFinishedTimestamp(gameRequest.getTimestamp());
+                        game.setGameState(GameStatus.FINISHED);
                     }
                     return game;
                 })

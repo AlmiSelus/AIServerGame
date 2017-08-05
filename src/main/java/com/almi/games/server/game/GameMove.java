@@ -1,6 +1,10 @@
 package com.almi.games.server.game;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -10,7 +14,6 @@ import javax.persistence.*;
 @Entity
 @Builder
 @Getter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameMove {
@@ -21,6 +24,7 @@ public class GameMove {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     private Game game;
 
     @OneToOne
