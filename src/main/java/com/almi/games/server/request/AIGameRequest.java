@@ -1,10 +1,12 @@
 package com.almi.games.server.request;
 
-import com.almi.games.server.game.GameStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -17,42 +19,11 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AIGameRequest {
     /**
-     * Caller ID
-     */
-    private String userID;
-
-    /**
-     * Position - general case for position based games
-     */
-    private String position;
-
-    /**
      * Request timestamp
      */
-    private LocalDateTime timestamp;
-
-    /**
-     * Status of the game
-     */
-    private GameStatus gameStatus;
-
-    /**
-     * Game ID
-     */
-    private Long gameId;
-
-    /**
-     * Move col
-     */
-    private Integer col;
-
-    /**
-     * Move row
-     */
-    private Integer row;
+    protected LocalDateTime timestamp;
 
 }

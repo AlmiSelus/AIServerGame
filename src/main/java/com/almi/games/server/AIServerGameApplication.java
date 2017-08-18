@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Created by c309044 on 2017-08-02.
  */
-
 @SpringBootApplication
 public class AIServerGameApplication {
 

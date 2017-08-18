@@ -1,0 +1,32 @@
+html, body, .row {
+    height: 100%;
+    margin: 0;
+}
+
+.content {
+    padding-top: 20px;
+}
+
+.description {
+    margin: 15px 0;
+    display: block;
+}
+
+#sidebar-right, #sidebar-wrapper {
+    background-color: #2a2f35;
+    color: #ffffff;
+    height: 100%
+}
+
+#sidebar-right, #sidebar-wrapper a {
+    color: #ffffff;
+}
+
+.http-method {
+    background-color: #f2f2f2;
+    border: 1px solid #cecece;
+    border-radius: 2px;
+    color: #1b1e21;
+    padding: 5px;
+    margin-left: 5px;
+}

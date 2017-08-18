@@ -1,11 +1,14 @@
 package com.almi.games.server.endpoint;
 
 import com.almi.games.server.board.ThirdPlayerConnectsToBoardException;
+import com.almi.games.server.endpoint.requests.GameConnectionRequest;
+import com.almi.games.server.endpoint.requests.GameFinishRequest;
+import com.almi.games.server.endpoint.requests.GameMoveRequest;
+import com.almi.games.server.endpoint.requests.UserGameRequest;
 import com.almi.games.server.game.Game;
 import com.almi.games.server.game.GameMove;
 import com.almi.games.server.game.GamePlayer;
 import com.almi.games.server.game.GameStatus;
-import com.almi.games.server.request.AIGameRequest;
 import io.reactivex.Single;
 import io.reactivex.exceptions.Exceptions;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +36,7 @@ public class GameService {
     @Autowired
     private PlayerRepository playerRepository;
 
-    public Single<Game> createGame(AIGameRequest gameRequest) {
+    public Single<Game> createGame(UserGameRequest gameRequest) {
         GamePlayer gamePlayer = findGamePlayerOrCreateNew(gameRequest);
 
         return Single.just(gameRequest)
@@ -46,13 +49,13 @@ public class GameService {
                 .doOnEvent((gameEvent, error) -> gameRepository.save(gameEvent));
     }
 
-    private String createGameHash(AIGameRequest gameRequest) {
+    private String createGameHash(UserGameRequest gameRequest) {
         String hashTimeStamp = new String(Base64.encode(gameRequest.getTimestamp().toString().getBytes()));
         hashTimeStamp += gameRequest.getUserID();
         return new String(Base64.encode(hashTimeStamp.getBytes()));
     }
 
-    public Single<Game> connectToExistingGame(AIGameRequest gameRequest) {
+    public Single<Game> connectToExistingGame(GameConnectionRequest gameRequest) {
         GamePlayer gamePlayer = findGamePlayerOrCreateNew(gameRequest);
         return Single.just(gameRequest)
                 .map(request -> gameRepository.findOne(gameRequest.getGameId()))
@@ -76,7 +79,7 @@ public class GameService {
         );
     }
 
-    public Single<Game> addMoveInGame(AIGameRequest gameRequest) {
+    public Single<Game> addMoveInGame(GameMoveRequest gameRequest) {
         GamePlayer player = findGamePlayerOrCreateNew(gameRequest);
         return Single.just(gameRequest)
                 .map(gameRequest1 -> gameRepository.findOne(gameRequest.getGameId()))
@@ -94,7 +97,7 @@ public class GameService {
                 .doOnEvent((game, error)-> gameRepository.save(game));
     }
 
-    public Single<Game> finishGame(AIGameRequest gameRequest) {
+    public Single<Game> finishGame(GameFinishRequest gameRequest) {
         return Single.just(gameRequest)
                 .map(request-> gameRepository.findOne(request.getGameId()))
                 .map(game-> {
@@ -107,7 +110,7 @@ public class GameService {
                 .doOnEvent((game, e)-> gameRepository.save(game));
     }
 
-    private GamePlayer findGamePlayerOrCreateNew(AIGameRequest gameRequest) {
+    private GamePlayer findGamePlayerOrCreateNew(UserGameRequest gameRequest) {
         return playerRepository.findGamePlayerByName(gameRequest.getUserID())
                 .orElse(GamePlayer.builder().name(gameRequest.getUserID()).build());
     }

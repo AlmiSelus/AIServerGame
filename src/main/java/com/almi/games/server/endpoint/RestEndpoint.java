@@ -1,17 +1,22 @@
 package com.almi.games.server.endpoint;
 
 import com.almi.games.server.board.Board;
+import com.almi.games.server.endpoint.requests.GameConnectionRequest;
+import com.almi.games.server.endpoint.requests.GameFinishRequest;
+import com.almi.games.server.endpoint.requests.GameMoveRequest;
+import com.almi.games.server.endpoint.requests.UserGameRequest;
 import com.almi.games.server.game.Game;
 import com.almi.games.server.game.GameMove;
 import com.almi.games.server.game.GameStatus;
 import com.almi.games.server.game.templates.GameTemplate;
 import com.almi.games.server.game.templates.GameTemplateEnum;
 import com.almi.games.server.game.templates.GameTemplateFactory;
-import com.almi.games.server.request.AIGameRequest;
+import com.almi.games.server.logs.EndpointDescription;
 import com.almi.games.server.request.GameResponse;
 import io.reactivex.Single;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -27,48 +32,51 @@ public class RestEndpoint {
     @Autowired
     private GameService gameService;
 
-    @GetMapping("/api/game/new")
+    @GetMapping(value = "/api/game/new", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @EndpointDescription(description = "This endpoint, when called, returns default board data for TIC TAC TOE game.")
     public GameResponse defaultBoard() {
         return getInitialBoardByGameType(GameTemplateEnum.TIC_TAC_TOE);
     }
 
-    @GetMapping("/api/game/new/{type}")
-    public GameResponse retreiveBoard(@PathVariable(value = "type") String type) {
-        return getInitialBoardByGameType(GameTemplateEnum.of(type));
+    @GetMapping(value = "/api/game/new/{type}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @EndpointDescription(description = "This endpoint, when called, returns default board data for game type specified as type parameter.")
+    public GameResponse retreiveBoard(@PathVariable(value = "type") GameTemplateEnum type) {
+        return getInitialBoardByGameType(type);
     }
 
-    @GetMapping("/api/game/status/{status}")
-    public DeferredResult<Iterable<Game>> getStartedGames(@PathVariable("status") String status) {
+    @GetMapping(value = "/api/game/status/{status}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public DeferredResult<Iterable<Game>> getStartedGames(@PathVariable("status") GameStatus status) {
         DeferredResult<Iterable<Game>> startedGamesResponse = new DeferredResult<>();
-        startedGamesResponse.setResult(gameService.listAllGames(GameStatus.of(status)));
+        startedGamesResponse.setResult(gameService.listAllGames(status));
         return startedGamesResponse;
     }
 
-    @PostMapping("/api/game/connect")
-    public DeferredResult<Game> startGame(@RequestBody AIGameRequest gameRequest) {
+    @PostMapping(value = "/api/game/create", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @EndpointDescription(description = "Create game with specific data such as: game creation time and player that created the game. All data are sent in AIGameRequest object")
+    public DeferredResult<Game> startGame(@RequestBody UserGameRequest gameRequest) {
         DeferredResult<Game> gameResult = new DeferredResult<>();
         Single<Game> startedGameSingle = gameService.createGame(gameRequest);
         startedGameSingle.subscribe(gameResult::setResult, gameResult::setErrorResult);
         return gameResult;
     }
 
-    @PostMapping("/api/game/join")
-    public DeferredResult<Game> joinToExistingGame(@RequestBody AIGameRequest gameRequest) {
+    @PostMapping(value = "/api/game/join", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public DeferredResult<Game> joinToExistingGame(@RequestBody GameConnectionRequest gameRequest) {
         DeferredResult<Game> gameResult = new DeferredResult<>();
         Single<Game> startedGameSingle = gameService.connectToExistingGame(gameRequest);
         startedGameSingle.subscribe(gameResult::setResult, gameResult::setErrorResult);
         return gameResult;
     }
 
-    @PostMapping("/api/game/move")
-    public DeferredResult<GameResponse> addMoveForGame(@RequestBody AIGameRequest gameRequest) {
+    @PostMapping(value = "/api/game/move", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public DeferredResult<GameResponse> addMoveForGame(@RequestBody GameMoveRequest gameRequest) {
         DeferredResult<GameResponse> gameResult = new DeferredResult<>();
         Single<Game> gameAction = gameService.addMoveInGame(gameRequest);
         gameAction.subscribe(success-> gameResult.setResult(GameResponse.builder().build()), gameResult::setErrorResult);
         return gameResult;
     }
 
-    @GetMapping("/api/game/{id}/moves")
+    @GetMapping(value = "/api/game/{id}/moves", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public DeferredResult<List<GameMove>> getAllMovesForGame(@PathVariable("id") Long id) {
         DeferredResult<List<GameMove>> gameResult = new DeferredResult<>();
         Single<List<GameMove>> gameAction = gameService.getMovesForGame(id);
@@ -76,8 +84,8 @@ public class RestEndpoint {
         return gameResult;
     }
 
-    @PostMapping("/api/game/finish")
-    public DeferredResult<Game> finishGame(@RequestBody AIGameRequest gameRequest) {
+    @PostMapping(value = "/api/game/finish", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public DeferredResult<Game> finishGame(@RequestBody GameFinishRequest gameRequest) {
         DeferredResult<Game> gameResult = new DeferredResult<>();
         Single<Game> finishedGame = gameService.finishGame(gameRequest);
         finishedGame.subscribe(gameResult::setResult, gameResult::setErrorResult);

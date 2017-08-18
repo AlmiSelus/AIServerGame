@@ -20,4 +20,10 @@ public enum GameTemplateEnum {
         }
         return TIC_TAC_TOE;
     }
+
+
+    @Override
+    public String toString() {
+        return type;
+    }
 }

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+
+    <title>Simple Sidebar - Start Bootstrap Template</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- Custom styles for this template -->
+    <link href="css/simple-sidebar.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="row">
+    <nav class="col-md-2" id="sidebar-wrapper">
+        <!-- Left -->
+        <ul class="navbar-nav nav">
+            <li th:each="endPoint : ${endPoints}">
+                <a th:text="${endPoint.endpointPath}" th:href="@{'/endpoints#'+${endPoint.endpointPath}}">Endpoint Path</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="col-md-7">
+        <div class="content">
+            <!-- Content -->
+            <div th:each="endPoint : ${endPoints}" th:attr="data-content=${endPoint.endpointPath.replace('/', '').replace('{','').replace('}','')}">
+                <h3 th:text="${endPoint.endpointName}">Name</h3>
+
+                <i class="description" th:text="${endPoint.endpointDescription}">Endpoint Description</i>
+
+                <p>
+                    <span>URL: <b th:text="${endPoint.endpointPath}">Endpoint Path</b></span>
+                    <span class="http-method" th:text="${endPoint.endpointRequest}">Endpoint Request</span>
+                </p>
+
+                <p th:if="${endPoint.endpointParameters.size() > 0}">
+                    <b>Parameters: </b>
+
+                    <ul>
+                        <li th:each="parameter : ${endPoint.endpointParameters}">
+                            <span class="http-method" th:text="|${parameter.parameterName} = ${parameter.parameterClass}|">Parameter Data</span>
+                            <div style="display: block" th:if="${parameter.possibleValues.size() > 0}">
+                                <b>Possible values: </b>
+                                <ul>
+                                    <li th:each="possible : ${parameter.possibleValues}" th:text="${possible}"></li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </p>
+
+                <p th:if="${!endPoint.endpointConsumes.isEmpty()}">
+                    <h3>Request section</h3>
+                    <b>Request Type header: </b> <span th:text="${endPoint.endpointConsumes}">Endpoint Consumes</span><br/>
+                    <b>Request JSON data: </b>
+                    <div style="display: block; padding-top: 10px" class="http-method">
+                        <span style="display: block" th:text="|${endPoint.endpointRestRequestBody.className} {|"></span>
+                        <span style="display: block; padding-left: 20px" th:each="entry : ${endPoint.endpointRestRequestBody.fieldHolders}" th:text="|${entry._2} = ${entry._1},|"></span>
+                        <span style="display: block">}</span>
+                    </div>
+                </p>
+
+                <p th:if="${!endPoint.endpointProduces.isEmpty()}">
+                    <h3>Response section</h3>
+                    <b>Response Type header: </b> <span th:text="${endPoint.endpointProduces}">Endpoint Produces</span><br/>
+                    <b>Response JSON data: </b>
+                    <div style="display: block; padding-top: 10px" class="http-method">
+                        <span style="display: block" th:text="|${endPoint.endpointResponse.className} {|"></span>
+                        <span style="display: block; padding-left: 20px" th:each="entry : ${endPoint.endpointResponse.fieldHolders}" th:text="|${entry._2} = ${entry._1},|"></span>
+                        <span style="display: block">}</span>
+                    </div>
+                </p>
+            </div>
+            <div data-content="defaultView">
+                <h3>Description:</h3>
+                <p>On this endpoint there is a view for all available REST endpoints.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap core JavaScript -->
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/popper/popper.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var hashChangeFunc = function() {
+            var divToFind = window.location.hash.slice(1).replace(/\/|{|}/gi, '');
+            $('.content > div').hide();
+            $('.content div[data-content=' + divToFind + ']').show();
+        };
+
+        var showOnStartup = function () {
+            $('.content > div').hide();
+
+            if(window.location.hash) {
+                hashChangeFunc();
+                return;
+            }
+
+            $('.content div[data-content=defaultView]').show();
+        };
+
+        $(window).bind('hashchange', hashChangeFunc);
+        showOnStartup();
+    });
+</script>
+
+</body>
+</html>
