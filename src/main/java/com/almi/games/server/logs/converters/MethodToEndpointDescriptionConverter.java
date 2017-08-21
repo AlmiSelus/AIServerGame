@@ -1,6 +1,9 @@
-package com.almi.games.server.logs;
+package com.almi.games.server.logs.converters;
 
+import com.almi.games.server.logs.EndpointDescription;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -8,11 +11,13 @@ import java.lang.reflect.Method;
 /**
  * Created by Almi on 8/16/2017.
  */
-public class EndpointDescriptionAnnotationProcessor {
+@Component
+public class MethodToEndpointDescriptionConverter implements Converter<Method, EndpointDescription> {
 
-    public static EndpointDescription getAnnotationData(Method method) {
-        if(hasAnnotation(method)) {
-            return method.getAnnotation(EndpointDescription.class);
+    @Override
+    public EndpointDescription convert(Method source) {
+        if(hasAnnotation(source)) {
+            return source.getAnnotation(EndpointDescription.class);
         }
         return new EndpointDescription(){
             @Override
@@ -32,7 +37,7 @@ public class EndpointDescriptionAnnotationProcessor {
         };
     }
 
-    private static boolean hasAnnotation(Method method) {
+    private boolean hasAnnotation(Method method) {
         return method.isAnnotationPresent(EndpointDescription.class);
     }
 

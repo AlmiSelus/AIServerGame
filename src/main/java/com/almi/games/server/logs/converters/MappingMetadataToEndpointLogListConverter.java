@@ -1,10 +1,15 @@
-package com.almi.games.server.logs;
+package com.almi.games.server.logs.converters;
 
+import com.almi.games.server.logs.EndpointDescription;
+import com.almi.games.server.logs.beans.ClassLogHolder;
+import com.almi.games.server.logs.beans.EndpointLog;
+import com.almi.games.server.logs.beans.ParameterLogHolder;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeType;
@@ -27,12 +32,15 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-public class EndpointLogMetadataProcessor implements Converter<RequestMappingHandlerMapping, List<EndpointLog>> {
+public class MappingMetadataToEndpointLogListConverter implements Converter<RequestMappingHandlerMapping, List<EndpointLog>> {
 
     /**
      * Separator for common data in view
      */
     private static final String ENDPOINT_DATA_SEPARATOR = ", ";
+
+    @Autowired
+    private MethodToEndpointDescriptionConverter methodDescriptionConverter;
 
     /**
      * Filter check if there is a path for given endpoint that has /api/game as some arbitrary substring
@@ -60,7 +68,7 @@ public class EndpointLogMetadataProcessor implements Converter<RequestMappingHan
 
     private EndpointLog populateEndpointLogWithMethodData(EndpointLog endpointLog, HandlerMethod handlerMethod) {
         endpointLog = populateEndpointLogWithDescriptionData(endpointLog,
-                EndpointDescriptionAnnotationProcessor.getAnnotationData(handlerMethod.getMethod()), handlerMethod);
+                methodDescriptionConverter.convert(handlerMethod.getMethod()), handlerMethod);
 
         return endpointLog.toBuilder()
                 .endpointParameters(createMethodParametersLog(handlerMethod))

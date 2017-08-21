@@ -1,5 +1,6 @@
 package com.almi.games.server.logs;
 
+import com.almi.games.server.logs.converters.MappingMetadataToEndpointLogListConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,7 +31,7 @@ public class EndpointsLogsController {
     private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
     @Autowired
-    private EndpointLogMetadataProcessor metadataProcessor;
+    private MappingMetadataToEndpointLogListConverter metadataProcessor;
 
     @GetMapping("/endpoints")
     @EndpointDescription(description = "This view offers search through available endpoints")

@@ -1,4 +1,4 @@
-package com.almi.games.server.logs;
+package com.almi.games.server.logs.beans;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.almi.games.server.logs;
+package com.almi.games.server.logs.beans;
 
 import io.vavr.Tuple2;
 import lombok.Builder;
