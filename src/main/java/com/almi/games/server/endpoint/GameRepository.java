@@ -1,6 +1,7 @@
 package com.almi.games.server.endpoint;
 
 import com.almi.games.server.game.Game;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
