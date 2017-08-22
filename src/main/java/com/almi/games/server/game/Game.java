@@ -11,7 +11,7 @@ import java.util.List;
  * Created by c309044 on 2017-08-03.
  */
 @Entity
-@Builder
+@Builder(toBuilder = true)
 @Getter
 @ToString
 @NoArgsConstructor
@@ -32,6 +32,11 @@ public class Game {
     @JoinColumn(name = "game_player_2")
     @Setter
     private GamePlayer player2;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "game_winner")
+    @Setter
+    private GamePlayer winner;
 
     @Column(name = "game_created_timestamp", nullable = false)
     private LocalDateTime createdTimestamp;

@@ -11,16 +11,20 @@ import com.almi.games.server.game.GamePlayer;
 import com.almi.games.server.game.GameStatus;
 import io.reactivex.Single;
 import io.reactivex.exceptions.Exceptions;
+import io.vavr.control.Option;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.API.*;
+import static io.vavr.Patterns.$None;
+import static io.vavr.Patterns.$Some;
 
 /**
  * Created by c309044 on 2017-08-03.
@@ -90,6 +94,7 @@ public class GameService {
                                     .player(player)
                                     .col(gameRequest.getCol())
                                     .row(gameRequest.getRow())
+                                    .moveTimestamp(gameRequest.getTimestamp())
                                     .build());
                     log.info("Game = " + game.toString());
                     return game;
@@ -107,6 +112,20 @@ public class GameService {
                     }
                     return game;
                 })
+                .map(game-> {
+                    Option<GamePlayer> gameWinner = Match(gameRequest.getWinner()).option(
+                            Case($(game.getPlayer1().getName()), game::getPlayer1),
+                            Case($(game.getPlayer2().getName()), game::getPlayer2)
+                    );
+
+                    return Match(gameWinner).of(
+                            Case($Some($()), (gamePlayer)-> Match(game.getGameState()).of(
+                                    Case($(GameStatus.FINISHED), () -> game.toBuilder().winner(gamePlayer).build()),
+                                    Case($(), () -> game)
+                            )),
+                            Case($None(), ()-> game)
+                    );
+                })
                 .doOnEvent((game, e)-> gameRepository.save(game));
     }
 
@@ -118,6 +137,10 @@ public class GameService {
     public Single<List<GameMove>> getMovesForGame(Long id) {
         return Single.just(id)
                 .map(i -> gameRepository.findOne(i))
-                .map(Game::getGameMoves);
+                .map(Game::getGameMoves)
+                .map(gameMoves-> {
+                    gameMoves.sort(Comparator.comparing(GameMove::getMoveTimestamp));
+                    return gameMoves;
+                });
     }
 }

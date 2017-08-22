@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
  * Created by c309044 on 2017-08-03.
@@ -36,4 +37,7 @@ public class GameMove {
 
     @Column(name = "game_move_col")
     private int col;
+
+    @Column(name = "game_move_timestamp")
+    private LocalDateTime moveTimestamp;
 }

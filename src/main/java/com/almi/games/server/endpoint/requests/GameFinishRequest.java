@@ -1,5 +1,6 @@
 package com.almi.games.server.endpoint.requests;
 
+import com.almi.games.server.game.GamePlayer;
 import com.almi.games.server.game.GameStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -22,5 +23,6 @@ import lombok.Setter;
 public class GameFinishRequest extends GameConnectionRequest {
 
     private GameStatus gameStatus;
+    private String winner;
 
 }
