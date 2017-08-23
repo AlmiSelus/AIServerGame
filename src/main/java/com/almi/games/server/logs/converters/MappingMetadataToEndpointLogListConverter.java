@@ -8,7 +8,6 @@ import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -22,8 +21,13 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static io.vavr.API.*;
+import static io.vavr.Predicates.instanceOf;
 
 /**
  * Created by Almi on 8/18/2017.
@@ -116,16 +120,11 @@ public class MappingMetadataToEndpointLogListConverter implements Converter<Requ
                 .collect(Collectors.toSet());
     }
 
-    private EndpointLog populateEndpointLogWithDescriptionData(EndpointLog log, EndpointDescription description, HandlerMethod handlerMethod) {
-        if(!description.description().equalsIgnoreCase(Strings.EMPTY)) {
-            log = log.toBuilder()
-                    .endpointDescription(description.description())
-                    .build();
-        }
-
-        return log.toBuilder()
-                .endpointName(createEndpointName(description, handlerMethod))
-                .build();
+    private EndpointLog populateEndpointLogWithDescriptionData(final EndpointLog log, EndpointDescription description, HandlerMethod handlerMethod) {
+        return Match(description.description()).of(
+                Case($(StringUtils.EMPTY), () -> log.toBuilder().endpointDescription(description.description()).build()),
+                Case($(), ()->log))
+            .toBuilder().endpointName(createEndpointName(description, handlerMethod)).build();
     }
 
     private ClassLogHolder processClassToLog(Class<?> clz) {
@@ -142,11 +141,10 @@ public class MappingMetadataToEndpointLogListConverter implements Converter<Requ
     }
 
     private Class<?> getTypeClass(Type type) {
-        if(type instanceof ParameterizedType) {
-            return getTypeClass(((ParameterizedType)type).getActualTypeArguments()[0]);
-        }
-
-        return (Class<?>)type;
+        return Match(type).of(
+                Case($(instanceOf(ParameterizedType.class)), () -> getTypeClass(((ParameterizedType)type).getActualTypeArguments()[0])),
+                Case($(), () -> (Class<?>)type)
+        );
     }
 
 }
