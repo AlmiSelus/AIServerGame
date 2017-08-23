@@ -38,6 +38,9 @@ public class GameMove {
     @Column(name = "game_move_col")
     private int col;
 
+    @Column(name = "game_move_char")
+    private String movementCharacter;
+
     @Column(name = "game_move_timestamp")
     private LocalDateTime moveTimestamp;
 }

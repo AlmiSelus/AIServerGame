@@ -15,4 +15,5 @@ public interface GameRepository extends CrudRepository<Game, Long> {
     List<Game> findAllByFinishedTimestampIsNullAndPlayer2IsNull();
     List<Game> findAllByFinishedTimestampIsNullAndPlayer2IsNotNull();
     List<Game> findAllByFinishedTimestampIsNotNull();
+    Game findByGameLink(String gameLink);
 }

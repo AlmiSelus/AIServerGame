@@ -1,0 +1,35 @@
+.tictactoe-box {
+    /*padding-top: 30%;*/
+    width: 30%;
+    margin-left: 5px;
+    margin-right: 5px;
+    border: 1px solid #dddddd;
+}
+
+.tictactoe-box:before {
+    content: "";
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.box-border {
+    border: 1px solid #dddddd;
+}
+
+.tictactoe-row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin: 10px;
+    height: 100%;
+}
+
+.game-data-box {
+    margin: 10px 0;
+}
+
+li.no-list-item {
+    list-style-type: none;
+}

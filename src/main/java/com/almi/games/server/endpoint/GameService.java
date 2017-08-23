@@ -94,6 +94,7 @@ public class GameService {
                                     .player(player)
                                     .col(gameRequest.getCol())
                                     .row(gameRequest.getRow())
+                                    .movementCharacter(gameRequest.getMoveChar())
                                     .moveTimestamp(gameRequest.getTimestamp())
                                     .build());
                     log.info("Game = " + game.toString());

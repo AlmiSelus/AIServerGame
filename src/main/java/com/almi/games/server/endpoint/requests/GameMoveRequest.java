@@ -20,5 +20,6 @@ public class GameMoveRequest extends GameConnectionRequest {
 
     private int col;
     private int row;
+    private String moveChar;
 
 }
