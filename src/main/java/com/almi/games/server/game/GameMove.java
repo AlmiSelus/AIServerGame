@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -42,5 +43,6 @@ public class GameMove {
     private String movementCharacter;
 
     @Column(name = "game_move_timestamp")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     private LocalDateTime moveTimestamp;
 }

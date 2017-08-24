@@ -10,6 +10,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/vendor/fontawesome/css/font-awesome.min.css" rel="stylesheet"/>
 
     <!-- Custom styles for this template -->
     <link href="/css/tictactoe.css" rel="stylesheet"/>
@@ -23,7 +24,9 @@
             <div class="col-md-12"><b><span th:text="${gameData.player1.name}"></span></b> vs. <span th:text="${gameData.player2.name}"></span> </div>
             <div class="col-md-12 entries">
                 <ul>
-                    <li th:each="move : ${gameData.gameMoves}" th:text="|r = ${move.row}, c = ${move.col}|"></li>
+                    <li th:each="move : ${gameData.gameMoves}">
+                        <a class="timestampLink" href="#" th:attr="data-timestamp=${move.moveTimestamp}" th:text="|User: ${move.player.name}|">Stats link</a>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -1,5 +1,7 @@
 package com.almi.games.server.game.templates;
 
+import java.util.Arrays;
+
 /**
  * Created by c309044 on 2017-08-02.
  */
@@ -13,14 +15,8 @@ public enum GameTemplateEnum {
     }
 
     public static GameTemplateEnum of(String type) {
-        for(GameTemplateEnum gameTemplate : values()) {
-            if(gameTemplate.type.equalsIgnoreCase(type)) {
-                return gameTemplate;
-            }
-        }
-        return TIC_TAC_TOE;
+        return Arrays.stream(values()).filter(gameTemplateEnum -> gameTemplateEnum.type.equalsIgnoreCase(type)).findFirst().orElse(TIC_TAC_TOE);
     }
-
 
     @Override
     public String toString() {
