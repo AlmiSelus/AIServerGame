@@ -40,6 +40,7 @@ remotes {
     webServer {
         host = '217.182.73.188'
         user = 'root'
+        password = '22jLRg49'
     }
 }
 
