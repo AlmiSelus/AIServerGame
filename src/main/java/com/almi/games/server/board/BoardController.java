@@ -1,5 +1,8 @@
 package com.almi.games.server.board;
 
+import com.almi.games.server.ai.Generator;
+import com.almi.games.server.ai.decisiontree.MinmaxTrainingMethod;
+import com.almi.games.server.ai.decisiontree.StateTreeNode;
 import com.almi.games.server.endpoint.GameRepository;
 import com.almi.games.server.game.Game;
 import com.almi.games.server.game.GameMove;
@@ -22,6 +25,13 @@ public class BoardController {
     @Autowired
     private GameRepository gameRepository;
 
+    @Autowired
+    private MinmaxTrainingMethod minmaxTraningMethod;
+
+    @Autowired
+    private Generator<StateTreeNode> stateTreeNodeGenerator;
+
+
     @GetMapping("/boards")
     public String showAllBoards() {
         return "tic-tac-toe";
@@ -33,6 +43,11 @@ public class BoardController {
         selectedGame.getGameMoves().sort(Comparator.comparing(GameMove::getMoveTimestamp));
         model.addAttribute(GAME_DATA_PROPERTY, selectedGame);
         return "tic-tac-toe";
+    }
+
+    @GetMapping("/board/training/minmax")
+    public void trainMinMax() {
+        minmaxTraningMethod.train(stateTreeNodeGenerator.generate());
     }
 
 }

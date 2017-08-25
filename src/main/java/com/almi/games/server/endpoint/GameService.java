@@ -106,13 +106,13 @@ public class GameService {
     public Single<Game> finishGame(GameFinishRequest gameRequest) {
         return Single.just(gameRequest)
                 .map(request-> gameRepository.findOne(request.getGameId()))
-                .map(game-> {
-                    if(gameRequest.getGameStatus() == GameStatus.FINISHED) {
-                        game.setFinishedTimestamp(gameRequest.getTimestamp());
-                        game.setGameState(GameStatus.FINISHED);
-                    }
-                    return game;
-                })
+                .map(game-> Match(gameRequest.getGameStatus()).of(
+                        Case($(GameStatus.FINISHED), game.toBuilder()
+                                .finishedTimestamp(gameRequest.getTimestamp())
+                                .gameState(GameStatus.FINISHED)
+                                .build()),
+                        Case($(), i->game)
+                ))
                 .map(game-> {
                     Option<GamePlayer> gameWinner = Match(gameRequest.getWinner()).option(
                             Case($(game.getPlayer1().getName()), game::getPlayer1),
