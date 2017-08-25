@@ -69,7 +69,7 @@ $(document).ready(function(){
     function initTimestampButtons() {
         $(".timestampLink").each(function() {
             var btn = $(this);
-            $(this).click(function () {
+            btn.click(function () {
                 var timestamp = Date.parse(btn.data("timestamp"));
                 console.log('dupa' + timestamp);
                 var indexToShowUpTo = ticTacToeBoard.movesData.findIndex(function (boardElement) {

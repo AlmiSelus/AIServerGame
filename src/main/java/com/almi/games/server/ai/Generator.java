@@ -5,4 +5,5 @@ package com.almi.games.server.ai;
  */
 public interface Generator<T> {
     T generate();
+    T generate(T startState);
 }

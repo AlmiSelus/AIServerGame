@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -14,6 +15,9 @@ import java.util.Set;
 @Getter
 @Builder(toBuilder = true)
 public class StateTreeNode {
+
+    public static final StateTreeNode EMPTY = builder().build();
+
     @Builder.Default
     private INDArray state = Nd4j.zeros(3, 3);
     @Builder.Default
@@ -31,6 +35,16 @@ public class StateTreeNode {
         }
 
         return hasSuchState;
+    }
+
+    public static StateTreeNode parseSingleString(String stateString) {
+        StateTreeNode stateTreeNode = StateTreeNode.EMPTY;
+        int[] arr = Arrays.stream(stateString.substring(1, stateString.length()-1).split(","))
+                .map(String::trim).mapToInt(Integer::parseInt).toArray();
+        for(int i = 0; i < arr.length; ++i) {
+            stateTreeNode.getState().put(i/3, i%3, arr[i]);
+        }
+        return stateTreeNode;
     }
 
     @Override

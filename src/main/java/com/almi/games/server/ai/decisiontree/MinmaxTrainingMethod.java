@@ -14,6 +14,7 @@ public class MinmaxTrainingMethod implements LearningMethod<StateTreeNode> {
     @Override
     public void train(StateTreeNode learningSet) {
 //        log.info(learningSet.toString());
+        log.info(learningSet.toString());
     }
 
 }

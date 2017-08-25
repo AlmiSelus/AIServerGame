@@ -1,6 +1,9 @@
 package com.almi.games.server.ai.decisiontree;
 
 import com.almi.games.server.ai.Generator;
+import io.vavr.Tuple2;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -8,12 +11,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 /**
  * Created by Almi on 8/24/2017.
@@ -22,32 +20,27 @@ import java.util.stream.IntStream;
 @Component
 public class StateTreeGenerator implements Generator<StateTreeNode> {
 
+    private static final int MAX_LEVEL_TO_GENERATE = 9;
+
     @Autowired
     private RandomGenerator randomGenerator;
 
+    @Setter
+    private int levelToGenerate = 0;
     private Function<Boolean, Integer> ticOrToe = (i)-> i ? 2 : 1;
+
+    @Getter
+    private int counter = 0;
 
     @Override
     public StateTreeNode generate() {
-        StateTreeNode root = StateTreeNode.builder().build();
-//        generateWithDepth(0, 1, root);
-        generateTree(root, 0, 2);
-        return findRoot(root);
+        return generate(StateTreeNode.builder().build());
     }
 
-    private void generateWithDepth(int currentDepth, int maxDepth, StateTreeNode parent) {
-        if(maxDepth == currentDepth) {
-            return;
-        }
-
-        StateTreeNode newStateNode = generateState(parent);
-
-        parent.getChildren().add(newStateNode);
-        Set<StateTreeNode> childrenStates = newStateNode.getChildren();
-        for(int i = 0; i < countNum(newStateNode.getState(), 0); ++i) {
-            generateWithDepth(currentDepth+1, maxDepth, newStateNode);
-        }
-        newStateNode.toBuilder().children(childrenStates).build();
+    @Override
+    public StateTreeNode generate(StateTreeNode startState) {
+        generateTree(startState, 0, levelToGenerate != 0 ? levelToGenerate : MAX_LEVEL_TO_GENERATE);
+        return findRoot(startState);
     }
 
     /**
@@ -60,13 +53,14 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
         if(currentLevel == maxLevel) {
             return;
         }
-        for(int i = 0; i < countNum(root.getState(), 0); ++i) {
-            StateTreeNode newStateNode = generateState(root);
-            root.getChildren().add(newStateNode);
-            log(newStateNode, currentLevel);
-            for(int j = 0; j < countNum(newStateNode.getState(), 0); ++j) {
-                generateTree(newStateNode, currentLevel+1, maxLevel);
-            }
+
+        StateTreeNode newStateNode = generateState(root);
+        root.getChildren().add(newStateNode);
+        log(newStateNode, currentLevel);
+
+        counter++;
+        for(int j = 0; j < countNum(newStateNode.getState(), 0); ++j) {
+            generateTree(newStateNode, currentLevel+1, maxLevel);
         }
     }
 
@@ -80,32 +74,30 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
         Nd4j.copy(parent.getState(), stateArray);
         boolean insertedNewValue = false;
         int currentMove = ticOrToe.apply(countNum(stateArray, 1) > countNum(stateArray, 2));
-        Integer[] possibleCols = IntStream.range(0, 3).flatMap(stream-> IntStream.range(0, 3)).boxed().toArray(Integer[]::new);
-        Integer[] possibleRows = IntStream.range(0, 3).flatMap(stream-> IntStream.range(0, 3)).boxed().toArray(Integer[]::new);
-        List<Integer> colsList = new ArrayList<>(Arrays.asList(possibleCols));
-        List<Integer> rowsList = new ArrayList<>(Arrays.asList(possibleRows));
+        PossibleIndicesMatrix possibleValuesMatrix = PossibleIndicesMatrix.of(3, 3);
+        int index = 0;
         while (!insertedNewValue) {
-            int rowIndex = randomGenerator.nextInt(rowsList.size());
-            int colIndex = randomGenerator.nextInt(colsList.size());
-            int randomRow = rowsList.get(rowIndex);
-            int randomCol = colsList.get(colIndex);
-            rowsList.remove(rowIndex);
-            colsList.remove(colIndex);
-            log.info(Arrays.toString(colsList.toArray(new Integer[colsList.size()])));
-            if(stateArray.getInt(randomRow, randomCol) == 0) {
-                stateArray.put(randomRow, randomCol, currentMove);
-                if(!parent.hasState(stateArray)) {
-                    insertedNewValue = true;
-                } else {
-                    stateArray.put(randomRow, randomCol, 0);
-                }
+            index++;
+            int indicesIndex = randomGenerator.nextInt(possibleValuesMatrix.size());
+            Tuple2<Integer, Integer> indices = possibleValuesMatrix.getTuple(indicesIndex);
+            possibleValuesMatrix.remove(indicesIndex);
+            if(stateArray.getInt(indices._1(), indices._2()) != 0) {
+                continue;
             }
+
+            stateArray.put(indices._1(), indices._2(), currentMove);
+
+            if(!parent.hasState(stateArray)) {
+                insertedNewValue = true;
+            } else {
+                stateArray.put(indices._1(), indices._2(), 0);
+            }
+
         }
 
-        return StateTreeNode.builder()
-                .state(stateArray)
-                .parent(parent)
-                .build();
+        log.info("Found state after {} moves", index);
+
+        return StateTreeNode.builder().state(stateArray).parent(parent).build();
     }
 
     private int countNum(INDArray stateArray, int num) {

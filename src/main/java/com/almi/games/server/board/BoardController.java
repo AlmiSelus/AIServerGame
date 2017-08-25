@@ -2,6 +2,7 @@ package com.almi.games.server.board;
 
 import com.almi.games.server.ai.Generator;
 import com.almi.games.server.ai.decisiontree.MinmaxTrainingMethod;
+import com.almi.games.server.ai.decisiontree.StateTreeGenerator;
 import com.almi.games.server.ai.decisiontree.StateTreeNode;
 import com.almi.games.server.endpoint.GameRepository;
 import com.almi.games.server.game.Game;
@@ -29,7 +30,7 @@ public class BoardController {
     private MinmaxTrainingMethod minmaxTraningMethod;
 
     @Autowired
-    private Generator<StateTreeNode> stateTreeNodeGenerator;
+    private StateTreeGenerator stateTreeNodeGenerator;
 
 
     @GetMapping("/boards")
@@ -47,7 +48,8 @@ public class BoardController {
 
     @GetMapping("/board/training/minmax")
     public void trainMinMax() {
-        minmaxTraningMethod.train(stateTreeNodeGenerator.generate());
+        stateTreeNodeGenerator.setLevelToGenerate(4);
+        minmaxTraningMethod.train(stateTreeNodeGenerator.generate(StateTreeNode.parseSingleString("[1, 0, 2, 2, 1, 0, 0, 0, 1]")));
     }
 
 }
