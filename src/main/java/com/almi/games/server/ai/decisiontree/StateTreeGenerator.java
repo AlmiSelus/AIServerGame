@@ -3,7 +3,6 @@ package com.almi.games.server.ai.decisiontree;
 import com.almi.games.server.ai.Generator;
 import io.vavr.Tuple2;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -39,7 +38,7 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
     public StateTreeNode generate(StateTreeNode startState) {
         int currentPlacesToFill = countNum(startState.getState(), 0);
         generateTree(startState, currentPlacesToFill);
-        return findRoot(startState);
+        return startState;
     }
 
     /**
@@ -49,18 +48,12 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
      * 4. Repeat for all states until given depth found
      */
     private void generateTree(StateTreeNode root, int currentPlacesToFill) {
+        counter++;
         for(int i = 0; i < currentPlacesToFill; ++i) {
             StateTreeNode newStateNode = generateState(root);
             root.getChildren().add(newStateNode);
-            log(newStateNode);
-
-            counter++;
             generateTree(newStateNode, currentPlacesToFill-1);
         }
-    }
-
-    private void log(StateTreeNode newStateNode) {
-        log.info( "State: {}, elements: {}", newStateNode.toString(), 9 - countNum(newStateNode.getState(), 0));
     }
 
     private StateTreeNode generateState(StateTreeNode parent) {
@@ -96,19 +89,5 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
             }
         }
         return zeroSum;
-    }
-
-    /**
-     * Rewind tree up to the root
-     *
-     * @param parent tree node
-     * @return Root node of a tree
-     */
-    private StateTreeNode findRoot(StateTreeNode parent) {
-        StateTreeNode root = parent;
-        while(root.getParent() != null) {
-            root = root.getParent();
-        }
-        return root;
     }
 }

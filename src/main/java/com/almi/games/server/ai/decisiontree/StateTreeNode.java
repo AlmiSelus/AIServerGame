@@ -1,6 +1,5 @@
 package com.almi.games.server.ai.decisiontree;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -24,10 +23,7 @@ public class StateTreeNode {
     @Builder.Default
     private Set<StateTreeNode> children = new LinkedHashSet<>();
 
-    @JsonIgnore
-    private StateTreeNode parent;
-
-    public boolean hasState(INDArray state) {
+    boolean hasState(INDArray state) {
         boolean hasSuchState = false;
 
         for(StateTreeNode child : children) {
