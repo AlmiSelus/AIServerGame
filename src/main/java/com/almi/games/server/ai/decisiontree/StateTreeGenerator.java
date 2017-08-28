@@ -20,13 +20,11 @@ import java.util.function.Function;
 @Component
 public class StateTreeGenerator implements Generator<StateTreeNode> {
 
-    private static final int MAX_LEVEL_TO_GENERATE = 9;
+    public static final int MAX_LEVEL_TO_GENERATE = 9;
 
     @Autowired
     private RandomGenerator randomGenerator;
 
-    @Setter
-    private int levelToGenerate = 0;
     private Function<Boolean, Integer> ticOrToe = (i)-> i ? 2 : 1;
 
     @Getter
@@ -39,7 +37,8 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
 
     @Override
     public StateTreeNode generate(StateTreeNode startState) {
-        generateTree(startState, 0, levelToGenerate != 0 ? levelToGenerate : MAX_LEVEL_TO_GENERATE);
+        int currentPlacesToFill = countNum(startState.getState(), 0);
+        generateTree(startState, currentPlacesToFill);
         return findRoot(startState);
     }
 
@@ -49,24 +48,19 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
      * 3. Add state as children to current state node
      * 4. Repeat for all states until given depth found
      */
-    private void generateTree(StateTreeNode root, int currentLevel, int maxLevel) {
-        if(currentLevel == maxLevel) {
-            return;
-        }
+    private void generateTree(StateTreeNode root, int currentPlacesToFill) {
+        for(int i = 0; i < currentPlacesToFill; ++i) {
+            StateTreeNode newStateNode = generateState(root);
+            root.getChildren().add(newStateNode);
+            log(newStateNode);
 
-        StateTreeNode newStateNode = generateState(root);
-        root.getChildren().add(newStateNode);
-        log(newStateNode, currentLevel);
-
-        counter++;
-        for(int j = 0; j < countNum(newStateNode.getState(), 0); ++j) {
-            generateTree(newStateNode, currentLevel+1, maxLevel);
+            counter++;
+            generateTree(newStateNode, currentPlacesToFill-1);
         }
     }
 
-    private void log(StateTreeNode newStateNode, int currentDepth) {
-        log.info( "Depth: {}, state: {}, elements: {}", currentDepth, newStateNode.toString(), 9 - countNum(newStateNode.getState(), 0));
-
+    private void log(StateTreeNode newStateNode) {
+        log.info( "State: {}, elements: {}", newStateNode.toString(), 9 - countNum(newStateNode.getState(), 0));
     }
 
     private StateTreeNode generateState(StateTreeNode parent) {
@@ -74,28 +68,22 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
         Nd4j.copy(parent.getState(), stateArray);
         boolean insertedNewValue = false;
         int currentMove = ticOrToe.apply(countNum(stateArray, 1) > countNum(stateArray, 2));
-        PossibleIndicesMatrix possibleValuesMatrix = PossibleIndicesMatrix.of(3, 3);
-        int index = 0;
-        while (!insertedNewValue) {
-            index++;
+        PossibleIndicesMatrix possibleValuesMatrix = PossibleIndicesMatrix.of(parent);
+        do {
             int indicesIndex = randomGenerator.nextInt(possibleValuesMatrix.size());
-            Tuple2<Integer, Integer> indices = possibleValuesMatrix.getTuple(indicesIndex);
-            possibleValuesMatrix.remove(indicesIndex);
-            if(stateArray.getInt(indices._1(), indices._2()) != 0) {
+            if(possibleValuesMatrix.wasVisited(indicesIndex)) {
                 continue;
             }
 
-            stateArray.put(indices._1(), indices._2(), currentMove);
-
+            possibleValuesMatrix.visit(indicesIndex);
+            Tuple2<Integer, Integer> indices = possibleValuesMatrix.getTuple(indicesIndex);
+            stateArray = stateArray.put(indices._1(), indices._2(), currentMove);
             if(!parent.hasState(stateArray)) {
                 insertedNewValue = true;
             } else {
                 stateArray.put(indices._1(), indices._2(), 0);
             }
-
-        }
-
-        log.info("Found state after {} moves", index);
+        } while(!insertedNewValue);
 
         return StateTreeNode.builder().state(stateArray).parent(parent).build();
     }

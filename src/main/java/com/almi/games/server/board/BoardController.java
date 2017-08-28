@@ -1,6 +1,5 @@
 package com.almi.games.server.board;
 
-import com.almi.games.server.ai.Generator;
 import com.almi.games.server.ai.decisiontree.MinmaxTrainingMethod;
 import com.almi.games.server.ai.decisiontree.StateTreeGenerator;
 import com.almi.games.server.ai.decisiontree.StateTreeNode;
@@ -48,7 +47,6 @@ public class BoardController {
 
     @GetMapping("/board/training/minmax")
     public void trainMinMax() {
-        stateTreeNodeGenerator.setLevelToGenerate(4);
         minmaxTraningMethod.train(stateTreeNodeGenerator.generate(StateTreeNode.parseSingleString("[1, 0, 2, 2, 1, 0, 0, 0, 1]")));
     }
 
