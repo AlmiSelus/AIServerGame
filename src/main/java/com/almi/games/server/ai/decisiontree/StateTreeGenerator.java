@@ -19,8 +19,6 @@ import java.util.function.Function;
 @Component
 public class StateTreeGenerator implements Generator<StateTreeNode> {
 
-    public static final int MAX_LEVEL_TO_GENERATE = 9;
-
     @Autowired
     private RandomGenerator randomGenerator;
 
@@ -38,6 +36,7 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
     public StateTreeNode generate(StateTreeNode startState) {
         int currentPlacesToFill = countNum(startState.getState(), 0);
         generateTree(startState, currentPlacesToFill);
+        log.info("Generated {} nodes", counter);
         return startState;
     }
 
@@ -61,7 +60,7 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
         Nd4j.copy(parent.getState(), stateArray);
         boolean insertedNewValue = false;
         int currentMove = ticOrToe.apply(countNum(stateArray, 1) > countNum(stateArray, 2));
-        PossibleIndicesMatrix possibleValuesMatrix = PossibleIndicesMatrix.of(parent);
+        PossibleIndicesMatrix possibleValuesMatrix = PossibleIndicesMatrix.of(parent, 0);
         do {
             int indicesIndex = randomGenerator.nextInt(possibleValuesMatrix.size());
             if(possibleValuesMatrix.wasVisited(indicesIndex)) {
@@ -78,7 +77,7 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
             }
         } while(!insertedNewValue);
 
-        return StateTreeNode.builder().state(stateArray).parent(parent).build();
+        return StateTreeNode.builder().state(stateArray).build();
     }
 
     private int countNum(INDArray stateArray, int num) {

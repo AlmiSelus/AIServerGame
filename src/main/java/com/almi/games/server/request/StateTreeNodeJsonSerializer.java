@@ -43,7 +43,7 @@ public class StateTreeNodeJsonSerializer extends JsonSerializer<StateTreeNode> {
                     gen.writeNumber(i);
                 } catch (IOException e) {
                     log.info(ExceptionUtils.getStackTrace(e));
-                }
+          ;      }
             });
         gen.writeEndArray();
 

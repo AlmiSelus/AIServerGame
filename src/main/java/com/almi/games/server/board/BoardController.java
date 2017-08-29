@@ -47,7 +47,7 @@ public class BoardController {
 
     @GetMapping("/board/training/minmax")
     public void trainMinMax() {
-        minmaxTraningMethod.train(stateTreeNodeGenerator.generate(StateTreeNode.parseSingleString("[1, 0, 2, 2, 1, 0, 0, 0, 1]")));
+        minmaxTraningMethod.train(stateTreeNodeGenerator.generate(StateTreeNode.EMPTY));
     }
 
 }
