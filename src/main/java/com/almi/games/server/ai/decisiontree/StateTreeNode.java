@@ -20,6 +20,7 @@ public class StateTreeNode {
 
     @Builder.Default
     private INDArray state = Nd4j.zeros(3, 3);
+
     @Builder.Default
     private Set<StateTreeNode> children = new LinkedHashSet<>();
 

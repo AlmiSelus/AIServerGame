@@ -3,6 +3,7 @@ package com.almi.games.server.ai.decisiontree;
 import com.almi.games.server.ai.Generator;
 import io.vavr.Tuple2;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -27,6 +28,9 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
     @Getter
     private int counter = 0;
 
+    @Setter
+    private int maxLevelToGenerate;
+
     @Override
     public StateTreeNode generate() {
         return generate(StateTreeNode.builder().build());
@@ -35,7 +39,7 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
     @Override
     public StateTreeNode generate(StateTreeNode startState) {
         int currentPlacesToFill = countNum(startState.getState(), 0);
-        generateTree(startState, currentPlacesToFill);
+        generateTree(startState, currentPlacesToFill, 0);
         log.info("Generated {} nodes", counter);
         return startState;
     }
@@ -46,12 +50,16 @@ public class StateTreeGenerator implements Generator<StateTreeNode> {
      * 3. Add state as children to current state node
      * 4. Repeat for all states until given depth found
      */
-    private void generateTree(StateTreeNode root, int currentPlacesToFill) {
+    private void generateTree(StateTreeNode root, int currentPlacesToFill, int level) {
+        if(level == maxLevelToGenerate) {
+            return;
+        }
+
         counter++;
         for(int i = 0; i < currentPlacesToFill; ++i) {
             StateTreeNode newStateNode = generateState(root);
             root.getChildren().add(newStateNode);
-            generateTree(newStateNode, currentPlacesToFill-1);
+            generateTree(newStateNode, currentPlacesToFill-1, level+1);
         }
     }
 
